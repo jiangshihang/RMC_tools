@@ -105,6 +105,15 @@ def print_assem_radial_ave_sym(np_assem_radial_ave, n_axial_location, l_core_map
     f_assem_radial_ave_sym.close()
 
 
+def convert_np_to_tecplot(np_property):
+    """
+
+    :param:
+    :return:
+    """
+    
+    
+
 def get_array_from_dat(s_dat_name):
     """
 
@@ -165,6 +174,9 @@ if __name__ == '__main__':
 
     # define core map
     import re
+    f_core_map = open('map', 'r')
+    s_core_map = f_core_map.read()
+    f_core_map.close()
     s_core_map = '0 0 0 0 1 1 1 1 1 1 1 0 0 0 0 ' \
                  '0 0 1 1 1 1 1 1 1 1 1 1 1 0 0 ' \
                  '0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 ' \
