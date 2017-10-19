@@ -105,14 +105,55 @@ def print_assem_radial_ave_sym(np_assem_radial_ave, n_axial_location, l_core_map
     f_assem_radial_ave_sym.close()
 
 
-def convert_np_to_tecplot(np_property):
+def convert_np_to_tecplot(np_property, l_core_map):
     """
 
     :param:
     :return:
     """
+    import math
+    n_row = int(math.sqrt(len(l_core_map)))
+
+    n_x, n_y, n_z, n_assem = np_property.shape
+    np_core_map = np.array(l_core_map).reshape(n_row, n_row)
+    np_tecplot = np.zeros(len(l_core_map) * n_x * n_y * n_z).reshape(n_row * n_x, n_row * n_y, n_z)
+
+    i_assem = -1
+    for i_x_assem in range(n_row):
+        for i_y_assem in range(n_row):
+            if np_core_map[i_x_assem, i_y_assem] != 0:
+                i_assem += 1
+                print 'processing data of assembly %d' % i_assem
+            for i_z in range(n_z):
+                for i_y_rod in range(n_y):
+                    for i_x_rod in range(n_x):
+                        np_tecplot[i_x_assem * n_x + i_x_rod, i_y_assem * n_y + i_y_rod, i_z] = \
+                            (np_property[i_x_rod, i_y_rod, i_z, i_assem] * np_core_map[i_x_assem, i_y_assem])
+
+    write_tecplot_file(np_tecplot)
     
-    
+
+def write_tecplot_file(np_tecplot):
+    """
+
+    :param np_tecplot:
+    :return:
+    """
+    s_title = 'property from hdf5'  # todo using more flexible variable
+    n_x, n_y, n_z = np_tecplot.shape
+
+    with open('tecplot', 'w') as f_tecplot:
+        f_tecplot.write('Title = \"%s\"\n' % s_title)
+        f_tecplot.write('Variables = \"X\",\"Y\",\"Z\",\"%s\"\n' % s_title)
+        f_tecplot.write('ZONE%sI = %d J = %d K = %d F=POINT\n' % (' ', n_x, n_y, n_z))
+        # todo add "SOLUTION" to tecplot file
+
+        for i_z in range(n_z):
+            for i_y in range(n_y):
+                for i_x in range(n_x):
+                    f_tecplot.write('%-10d %-10d %-10d %-10.20f\n'
+                                    % (i_x, i_y, i_z, np_tecplot[i_x, i_y, i_z]))
+
 
 def get_array_from_dat(s_dat_name):
     """
@@ -165,7 +206,7 @@ if __name__ == '__main__':
     if options.property_name is not None:
         s_property_name = options.property_name
     else:
-        s_property_name = 'channel_liquid_temps [C]'
+        s_property_name = 'pin_powers'
 
     if options.data_type is not None:
         s_data_type = options.data_type.upper()
@@ -177,21 +218,21 @@ if __name__ == '__main__':
     f_core_map = open('map', 'r')
     s_core_map = f_core_map.read()
     f_core_map.close()
-    s_core_map = '0 0 0 0 1 1 1 1 1 1 1 0 0 0 0 ' \
-                 '0 0 1 1 1 1 1 1 1 1 1 1 1 0 0 ' \
-                 '0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 ' \
-                 '0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 ' \
-                 '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
-                 '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
-                 '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
-                 '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
-                 '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
-                 '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
-                 '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
-                 '0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 ' \
-                 '0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 ' \
-                 '0 0 1 1 1 1 1 1 1 1 1 1 1 0 0 ' \
-                 '0 0 0 0 1 1 1 1 1 1 1 0 0 0 0 '
+    # s_core_map = '0 0 0 0 1 1 1 1 1 1 1 0 0 0 0 ' \
+    #              '0 0 1 1 1 1 1 1 1 1 1 1 1 0 0 ' \
+    #              '0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 ' \
+    #              '0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 ' \
+    #              '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
+    #              '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
+    #              '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
+    #              '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
+    #              '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
+    #              '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
+    #              '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ' \
+    #              '0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 ' \
+    #              '0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 ' \
+    #              '0 0 1 1 1 1 1 1 1 1 1 1 1 0 0 ' \
+    #              '0 0 0 0 1 1 1 1 1 1 1 0 0 0 0 '
     l_core_map = re.findall('\d', s_core_map)
     l_core_map = [int(n_map) for n_map in l_core_map]
 
@@ -199,8 +240,10 @@ if __name__ == '__main__':
     if s_data_type == 'HDF5':
 
         np_property = get_array_from_h5(s_data_name, s_property_name)
-        np_assem_ave_property = calc_assem_radial_ave(np_property, [49])
-        print_assem_radial_ave_sym(np_assem_ave_property, 49, l_core_map)
+        # np_assem_ave_property = calc_assem_radial_ave(np_property, [49])
+        # print_assem_radial_ave_sym(np_assem_ave_property, 49, l_core_map)
+
+        convert_np_to_tecplot(np_property, l_core_map)
 
     elif s_data_type == 'DAT':
         print "DAT data resolution not supported for now!"
