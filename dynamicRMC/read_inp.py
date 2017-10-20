@@ -12,12 +12,10 @@ def read_inp(s_inp_name):
     s_inp = format_inp(s_inp)
 
     # open('pre_test_file', 'w').write(s_inp)
-    # print read_kinetic_para(s_inp)
+
     # check_inp(s_inp)
 
     d_var_time = read_kinetic_para(s_inp)
-
-    # print d_var_time
 
     l_sub_inp_name = generate_inp(s_inp_name, s_inp, d_var_time)
 
@@ -43,6 +41,18 @@ def format_inp(s_inp):
     s_inp = s_inp.upper()
 
     l_inp = list(s_inp)
+
+    # delete all '\r'
+    index = 0
+    n_del = 0
+    n_len_inp = len(l_inp)
+    while index < n_len_inp:
+        if l_inp[index] == '\r':
+            del l_inp[index]
+            n_del = 1
+            n_len_inp -= 1
+        index = index - n_del + 1
+        n_del = 0
 
     # add blanks around equals '='
     index = 0
@@ -175,7 +185,7 @@ def read_kinetic_para(s_inp):
     i_timestep = s_kinetic_block.index('TIMESTEP')
     i_parameter = s_kinetic_block.index('PARAMETER')
     if i_quadfit != -1:
-        s_quadfit_block = s_kinetic_block[i_quadfit + 8: i_timestep]
+        s_quadfit_block = s_kinetic_block[i_quadfit + 4: i_timestep]
     s_timestep_block = s_kinetic_block[i_timestep + 9: i_parameter]
     s_parameter_block = s_kinetic_block[i_parameter + 10:]
 
@@ -196,7 +206,7 @@ def read_kinetic_para(s_inp):
             d_kinetic_para['FIT']['FITSTEP'].append(l_fitstep[0])
             d_kinetic_para['FIT']['SAMPLESTEP'].append(l_samplestep)
             d_kinetic_para['FIT']['SUBSTEP'].append(l_substep[0])
-            d_kinetic_para['FIT']['SUBSTEP'].append(l_mode[0])
+            d_kinetic_para['FIT']['MODE'].append(l_mode[0])
 
     # read time
     d_kinetic_para['TIMESTEP'] = []
@@ -264,12 +274,15 @@ def get_next_separator_index(i_cur_word, s_block):
     :return:
     """
     i_next_separator = i_cur_word
+    # add a separator to the end if there is no separator at end
     b_separator_end = True
     if s_block[-1] != ' ' and s_block != '\n':
         b_separator_end = False
         s_block = s_block + '\n'
-    while s_block[i_next_separator] != ' ' and s_block[i_next_separator] != '\n':
+    # move the index until the index points to a separator
+    while s_block[i_next_separator] != ' ' and s_block[i_next_separator] != '\n' and s_block[i_next_separator] != '\t':
         i_next_separator = i_next_separator + 1
+    # if there is no separator behind the current index, return -1
     if i_next_separator == len(s_block) - 1 and not b_separator_end:
         i_next_separator = -1
     return i_next_separator
@@ -391,7 +404,7 @@ def generate_inp(s_inp_name, s_inp, d_var_time):
 
             s_sub_inp = modify_inp(s_sub_inp, s_target, s_replace)
 
-        s_sub_inp_name = s_inp_name + '%s' % n_time
+        s_sub_inp_name = s_inp_name + '.%s' % n_time
         l_sub_inp_name.append(s_sub_inp_name)
 
         f_sub_inp = open(s_sub_inp_name, 'w')
