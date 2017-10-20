@@ -145,7 +145,7 @@ def read_kinetic_para(s_inp):
     :param s_inp:
     :return:
     {'INDEX_KINETIC':4000,
-     'QUADFIT':{'FITSTEP':['5', '10', '15']
+     'FIT':{'FITSTEP':['5', '10', '15']
                 'SAMPLESTEP':[['0', '1', '2', '4'],
                               ['5', '6', '7', '8'],
                               ['11','12','14','15']]
@@ -162,7 +162,7 @@ def read_kinetic_para(s_inp):
     d_kinetic_para = {}
 
     l_key = ['KINETIC',
-             'QUADFIT', 'FITSTEP', 'SAMPLESTEP', 'SUBSTEP',
+             'FIT', 'FITSTEP', 'SAMPLESTEP', 'SUBSTEP', 'MODE',
              'TIMESTEP', 'TIME',
              'PARAMETER', 'LOCALWORD', 'VALUE']
 
@@ -171,7 +171,7 @@ def read_kinetic_para(s_inp):
 
     s_kinetic_block = s_inp[i_kinetic:]
 
-    i_quadfit = s_kinetic_block.find('QUADFIT')
+    i_quadfit = s_kinetic_block.find('FIT')
     i_timestep = s_kinetic_block.index('TIMESTEP')
     i_parameter = s_kinetic_block.index('PARAMETER')
     if i_quadfit != -1:
@@ -179,21 +179,24 @@ def read_kinetic_para(s_inp):
     s_timestep_block = s_kinetic_block[i_timestep + 9: i_parameter]
     s_parameter_block = s_kinetic_block[i_parameter + 10:]
 
-    # read quadfit
+    # read fit
     if i_quadfit != -1:
-        d_kinetic_para['QUADFIT'] = {}
-        d_kinetic_para['QUADFIT']['FITSTEP'] = []
-        d_kinetic_para['QUADFIT']['SAMPLESTEP'] = []
-        d_kinetic_para['QUADFIT']['SUBSTEP'] = []
+        d_kinetic_para['FIT'] = {}
+        d_kinetic_para['FIT']['FITSTEP'] = []
+        d_kinetic_para['FIT']['SAMPLESTEP'] = []
+        d_kinetic_para['FIT']['SUBSTEP'] = []
+        d_kinetic_para['FIT']['MODE'] = []
 
         i_cur_keyword = 0
         while i_cur_keyword != -1:
             l_fitstep, i_cur_keyword = get_key_value(s_quadfit_block, i_cur_keyword, 'FITSTEP', l_key)
             l_samplestep, i_cur_keyword = get_key_value(s_quadfit_block, i_cur_keyword, 'SAMPLESTEP', l_key)
             l_substep, i_cur_keyword = get_key_value(s_quadfit_block, i_cur_keyword, 'SUBSTEP', l_key)
-            d_kinetic_para['QUADFIT']['FITSTEP'].append(l_fitstep[0])
-            d_kinetic_para['QUADFIT']['SAMPLESTEP'].append(l_samplestep)
-            d_kinetic_para['QUADFIT']['SUBSTEP'].append(l_substep[0])
+            l_mode, i_cur_keyword = get_key_value(s_quadfit_block, i_cur_keyword, 'MODE', l_key)
+            d_kinetic_para['FIT']['FITSTEP'].append(l_fitstep[0])
+            d_kinetic_para['FIT']['SAMPLESTEP'].append(l_samplestep)
+            d_kinetic_para['FIT']['SUBSTEP'].append(l_substep[0])
+            d_kinetic_para['FIT']['SUBSTEP'].append(l_mode[0])
 
     # read time
     d_kinetic_para['TIMESTEP'] = []
@@ -352,9 +355,9 @@ def generate_inp(s_inp_name, s_inp, d_var_time):
         s_sub_inp = modify_inp(s_sub_inp, s_target, s_replace)
 
         # change quadfit
-        if 'QUADFIT' in d_var_time:
-            s_target = 'QUADFIT'
-            s_replace = 'QUADFIT'
+        if 'FIT' in d_var_time:
+            s_target = 'FIT'
+            s_replace = 'FIT'
 
             # add currentstep
             if n_time != 0:
@@ -362,11 +365,12 @@ def generate_inp(s_inp_name, s_inp, d_var_time):
 
             # add samplestep and substep
             s_fitstep = '%s' % i_time
-            if s_fitstep in d_var_time['QUADFIT']['FITSTEP']:
-                i_fitstep = d_var_time['QUADFIT']['FITSTEP'].index(s_fitstep)
+            if s_fitstep in d_var_time['FIT']['FITSTEP']:
+                i_fitstep = d_var_time['FIT']['FITSTEP'].index(s_fitstep)
 
-                s_replace += ' SAMPLESTEP = ' + ' '.join(d_var_time['QUADFIT']['SAMPLESTEP'][i_fitstep])
-                s_replace += ' SUBSTEP = ' + d_var_time['QUADFIT']['SUBSTEP'][i_fitstep]
+                s_replace += ' SAMPLESTEP = ' + ' '.join(d_var_time['FIT']['SAMPLESTEP'][i_fitstep])
+                s_replace += ' SUBSTEP = ' + d_var_time['FIT']['SUBSTEP'][i_fitstep]
+                s_replace += ' MODE = ' + d_var_time['FIT']['MODE'][i_fitstep]
 
             s_sub_inp = modify_inp(s_sub_inp, s_target, s_replace)
 
