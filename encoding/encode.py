@@ -2,6 +2,7 @@
 import os
 import sys
 import glob
+import shutil
 
 os.chdir(sys.path[0])
 
