@@ -23,8 +23,10 @@ def run_kinetic():
     parser.add_option('-p', '--platform', type='string', dest='platform',
                       help="name of the platform that the code is running on.\n"
                            "OPTIONS: linux, windows, tianhe, tansuo.")
-    parser.add_option('-c', '--continue', type='string', dest='time',
-                      help='timepoint to continue calculation.')
+    parser.add_option('-c', '--continue', type='int', dest='n_continue',
+                      help='step number which the program will continue calculating at.')
+    parser.add_option('-s', '--stop', type='int', dest='n_stop',
+                      help="step number which the program will stop at.")
 
     (options, args) = parser.parse_args()
 
@@ -40,6 +42,14 @@ def run_kinetic():
         s_platform = options.platform
     else:
         s_platform = 'LINUX'
+    if options.n_continue is not None:
+        n_continue = options.n_continue
+    else:
+        n_continue = 0
+    if options.n_stop is not None:
+        n_stop = options.n_stop
+    else:
+        n_stop = -1
 
     os.chdir(sys.path[0])
     if not os.path.exists('results'):
@@ -48,7 +58,7 @@ def run_kinetic():
     l_s_sub_inp_name = read_inp(s_inp_name)
 
     rmc = RMC()
-    for i_sub_inp_name in range(len(l_s_sub_inp_name)):
+    for i_sub_inp_name in (range(n_continue, len(l_s_sub_inp_name)) if n_stop < 0 else range(n_continue, n_stop + 1)):
         s_sub_inp_name = l_s_sub_inp_name[i_sub_inp_name]
         rmc.run(s_sub_inp_name, n_parallel, s_platform)
         rmc.archive(s_sub_inp_name, os.path.join(sys.path[0], 'results'))
