@@ -9,7 +9,7 @@ def run_kinetic():
     :return:
     """
     from read_inp import read_inp
-    from RMC import RMC
+    from rmc.RMC import RMC
 
     from optparse import OptionParser
 
