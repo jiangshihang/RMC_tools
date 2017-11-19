@@ -10,5 +10,5 @@ You need to prepare two inp file:
 0 1 0  
 presents a core with five assemblies.
 - **h5_config**: configuration file. Two parameters are necessary for now:
--- hdf5name: name of the hdf5 file
--- dataset: name of the desired dataset
+  - hdf5name: name of the hdf5 file
+  - dataset: name of the desired dataset
