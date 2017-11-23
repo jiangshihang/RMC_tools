@@ -42,6 +42,11 @@ def format_inp(s_inp):
 
     l_inp = list(s_inp)
 
+    # replace all '\t' with ' '
+    for index in range(len(l_inp)):
+        if l_inp[index] == '\t':
+            l_inp[index] = ' '
+    
     # delete all '\r'
     index = 0
     n_del = 0
