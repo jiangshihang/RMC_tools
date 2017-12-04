@@ -50,17 +50,20 @@ def run_kinetic():
         n_stop = options.n_stop
     else:
         n_stop = -1
-
+    
+    # pre-condition
     os.chdir(sys.path[0])
     if not os.path.exists('results'):
         os.mkdir('results')
+    if os.path.exists('RMC.log'):
+        os.remove('RMC.log')
 
     l_s_sub_inp_name = read_inp(s_inp_name)
 
     for i_sub_inp_name in (range(n_continue, len(l_s_sub_inp_name)) if n_stop < 0 else range(n_continue, n_stop + 1)):
         s_sub_inp_name = l_s_sub_inp_name[i_sub_inp_name]
         rmc = RMC(s_inp_name=s_sub_inp_name)
-        rmc.run(s_sub_inp_name, n_parallel, s_platform)
+        rmc.run(n_parallel, s_platform)
         rmc.archive(s_sub_inp_name, os.path.join(sys.path[0], 'results'))
         if i_sub_inp_name != len(l_s_sub_inp_name) - 1:
             os.rename(os.path.join(sys.path[0], s_sub_inp_name + '.source'),

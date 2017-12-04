@@ -109,7 +109,7 @@ class RMC:
             write_log('Job submitted!')
             write_log(s_output)
 
-            if not os.path.exists(self.s_inp_name + 'out'):
+            if os.path.exists(self.s_inp_name + 'out'):
                 b_sub_success = True
                 write_log('Job submission succeeded!')
             else:
@@ -126,8 +126,12 @@ class RMC:
         """
         import subprocess
 
+        s_rmc_out_name = self.s_inp_name + '.out'
+        if os.path.exists(s_rmc_out_name):
+            os.remove(s_rmc_out_name)
+
         # job submission
-        s_tansuo_job_format =  'bsub -q q_x86_share -n {0} -o out.{1}.\%J mpirun ./{2} {1}'
+        s_tansuo_job_format =  'bsub -q q_x86_share -n {0} -o out.{1}.\%J ./{2} {1}'
         s_tansuo_job =s_tansuo_job_format.format(n_parallel, self.s_inp_name, self.s_rmc_name)
         b_sub_success = False
         while not b_sub_success:
@@ -140,13 +144,17 @@ class RMC:
             write_log('Job submitted!')
             write_log(s_output)
 
-            if not os.path.exists(self.s_inp_name + 'out'):
+            # if os.path.exists(self.s_inp_name + 'out'):
+            if self._get_jobid(s_output):
                 b_sub_success = True
                 write_log('Job submission succeeded!')
             else:
                 write_log('Job submission failed!')
                 time.sleep(30)
                 write_log('Retry submission...')
+
+        # wait for calculation finish
+        self._wait_job_end()
 
     def _wait_job_end(self):
         """
@@ -169,6 +177,22 @@ class RMC:
             n_out_file_size = os.path.getsize(s_rmc_out_name)
             time.sleep(1)
         
+    def _get_jobid(self, s_output):
+        """
+    
+        :param s_output: Output of job submission command. Example: "Job <40263106> has been submitted to queue <q_x86_share>"
+        """
+        import re
+    
+        n_jobid = 0
+        l_jobid = re.findall('<(\d+)>', s_output)
+        try:
+            n_jobid = int(l_jobid[-1])
+        except Warning:
+            print 'Job Submission failed.'
+    
+        return n_jobid
+
     def archive(self, s_inp_name, s_to_dir='default', suffix=''):
         """
 
