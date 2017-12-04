@@ -11,10 +11,6 @@ def read_inp(s_inp_name):
 
     s_inp = format_inp(s_inp)
 
-    # open('pre_test_file', 'w').write(s_inp)
-
-    # check_inp(s_inp)
-
     d_var_time = read_kinetic_para(s_inp)
 
     l_sub_inp_name = generate_inp(s_inp_name, s_inp, d_var_time)
@@ -31,10 +27,10 @@ def format_inp(s_inp):
     3:delete all return character with a blank as the beginning of the next line;
     for input like this:
     UNIVERSE 11 move = 0 0 0  lat = 1  pitch = 1.26 1.26 1  scope = 17 17 1  fill=
-     1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
-     1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+     1  1  1
+     1  1  1
     the output will be:
-    UNIVERSE 11 MOVE = 0 0 0 LAT = 1 PITCH = 1.26 1.26 1 SCOPE = 17 17 1  FILL = 1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1 1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
+    UNIVERSE 11 MOVE = 0 0 0 LAT = 1 PITCH = 1.26 1.26 1 SCOPE = 17 17 1  FILL = 1  1  1  1  1  1
     :param s_inp: string of reading inp file
     :return: string after preconditioning
     """
@@ -42,7 +38,9 @@ def format_inp(s_inp):
 
     l_inp = list(s_inp)
 
-    # replace all '\t' with ' '
+    l_inp.append('\n')
+
+    # replace all '\t' with blank
     for index in range(len(l_inp)):
         if l_inp[index] == '\t':
             l_inp[index] = ' '
@@ -463,4 +461,4 @@ def check_kinetic_para(d_var_kinetic):
 
 
 if __name__ == '__main__':
-    read_inp('test_inp')
+    print format_inp(open('test_inp', 'r').read())
